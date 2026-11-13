@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
+  "name": "exaone-skill-local",
+  "description": "Local marketplace for the exaone-skill plugin (this checkout).",
+  "owner": { "name": "cakel" },
+  "plugins": [
+    {
+      "name": "exaone-skill",
+      "source": "./",
+      "description": "K-EXAONE 2.5 second opinion: /exaone-skill:review, :adversarial-review, :consult, :setup."
+    }
+  ]
+}

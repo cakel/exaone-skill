@@ -1,0 +1,8 @@
+{
+  "name": "exaone-skill",
+  "version": "0.1.6",
+  "description": "Unofficial K-EXAONE 2.5 (api.exaone.ai) second-opinion client for Claude Code. Adds /exaone-skill:review, :adversarial-review, :consult, :setup. Used to reinforce Claude's code review via a Haiku runner. Requires an EXAONE API key.",
+  "author": { "name": "cakel" },
+  "repository": "https://github.com/cakel/exaone-skill",
+  "license": "Apache-2.0"
+}

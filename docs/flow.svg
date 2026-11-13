@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 450" width="880" height="450" role="img" aria-labelledby="t d">
+  <title id="t">exaone-skill 동작 흐름</title>
+  <desc id="d">Claude가 1차 리뷰를 하고, Haiku runner가 diff와 1차 리뷰를 EXAONE API로 보내며, Claude가 EXAONE의 응답을 검증해 병합한다. 서버 혼잡 시 5초 간격 최대 5회 재시도하고, 그래도 실패하면 Claude 단독 리뷰로 마무리한다.</desc>
+  <style>
+    :root { --bg:#ffffff; --fg:#1f2328; --muted:#59636e; --line:#8c959f;
+            --claude:#fff4e5; --claude-b:#d97706; --haiku:#eef2ff; --haiku-b:#4f46e5;
+            --ex:#e8f5ee; --ex-b:#1a7f4b; --fail:#fdecec; --fail-b:#cf222e; }
+    @media (prefers-color-scheme: dark) {
+      :root { --bg:#0d1117; --fg:#e6edf3; --muted:#9198a1; --line:#6e7681;
+              --claude:#2d2112; --claude-b:#f0a33a; --haiku:#1c1f3a; --haiku-b:#8b8cf8;
+              --ex:#11281c; --ex-b:#3fb950; --fail:#2d1416; --fail-b:#f85149; }
+    }
+    text { font-family: "Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR","Segoe UI",sans-serif; fill: var(--fg); }
+    .h { font-size: 16px; font-weight: 700; }
+    .s { font-size: 13px; fill: var(--muted); }
+    .n { font-size: 13px; font-weight: 700; fill: var(--bg); }
+    .lbl { font-size: 12px; fill: var(--muted); }
+    .bg { fill: var(--bg); }
+    .arrow { stroke: var(--line); stroke-width: 2; fill: none; marker-end: url(#a); }
+    .dash { stroke-dasharray: 6 5; }
+    .failarrow { stroke: var(--fail-b); stroke-width: 2; fill: none; stroke-dasharray: 6 5; marker-end: url(#af); }
+  </style>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" style="fill: var(--line)"/>
+    </marker>
+    <marker id="af" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" style="fill: var(--fail-b)"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="880" height="450" rx="12"/>
+  <g transform="translate(0,34)">
+
+  <!-- 1. Claude first review -->
+  <rect x="24" y="40" width="240" height="110" rx="10" style="fill:var(--claude);stroke:var(--claude-b);stroke-width:2"/>
+  <circle cx="48" cy="64" r="13" style="fill:var(--claude-b)"/><text class="n" x="48" y="69" text-anchor="middle">1</text>
+  <text class="h" x="70" y="70">Claude: 1차 리뷰</text>
+  <text class="s" x="40" y="100">diff를 읽고 문제 목록 작성</text>
+  <text class="s" x="40" y="122">→ prior.md</text>
+
+  <!-- 2. Haiku runner -->
+  <rect x="320" y="40" width="240" height="110" rx="10" style="fill:var(--haiku);stroke:var(--haiku-b);stroke-width:2"/>
+  <circle cx="344" cy="64" r="13" style="fill:var(--haiku-b)"/><text class="n" x="344" y="69" text-anchor="middle">2</text>
+  <text class="h" x="366" y="70">Haiku runner</text>
+  <text class="s" x="336" y="100">diff + 변경 파일 + prior.md를</text>
+  <text class="s" x="336" y="122">묶어서 스크립트로 전송</text>
+
+  <!-- 3. EXAONE API -->
+  <rect x="616" y="40" width="240" height="110" rx="10" style="fill:var(--ex);stroke:var(--ex-b);stroke-width:2"/>
+  <circle cx="640" cy="64" r="13" style="fill:var(--ex-b)"/><text class="n" x="640" y="69" text-anchor="middle">3</text>
+  <text class="h" x="662" y="70">K-EXAONE 2.5</text>
+  <text class="s" x="632" y="100">api.exaone.ai (외부)</text>
+  <text class="s" x="632" y="122">놓친 문제 + [DISPUTE] 반론</text>
+
+  <path class="arrow" d="M264,95 L316,95"/>
+  <path class="arrow" d="M560,95 L612,95"/>
+
+  <!-- retry loop on EXAONE -->
+  <path class="arrow dash" d="M800,40 C800,6 700,6 700,36"/>
+  <text class="lbl" x="690" y="12" text-anchor="end">429 혼잡: 5초 간격 × 최대 5회 재시도</text>
+
+  <!-- 4. Merge (success path) -->
+  <rect x="320" y="250" width="300" height="130" rx="10" style="fill:var(--claude);stroke:var(--claude-b);stroke-width:2"/>
+  <circle cx="344" cy="274" r="13" style="fill:var(--claude-b)"/><text class="n" x="344" y="279" text-anchor="middle">4</text>
+  <text class="h" x="366" y="280">Claude: 검증하고 병합</text>
+  <text class="s" x="336" y="310">EXAONE 지적을 코드에서 직접 확인</text>
+  <text class="s" x="336" y="332">출처 표시: (Claude) (EXAONE) (both)</text>
+  <text class="s" x="336" y="354">→ 최종 리뷰 + GATE: PASS/FAIL</text>
+
+  <!-- fail-soft -->
+  <rect x="656" y="250" width="200" height="130" rx="10" style="fill:var(--fail);stroke:var(--fail-b);stroke-width:2"/>
+  <text class="h" x="672" y="280">실패해도 계속</text>
+  <text class="s" x="672" y="310">재시도 소진·끊김·오류</text>
+  <text class="s" x="672" y="332">→ Claude 단독 리뷰</text>
+  <text class="s" x="672" y="354">+ "EXAONE 보강 실패" 1줄</text>
+
+  <!-- success: EXAONE -> merge -->
+  <path class="arrow" d="M680,150 C680,200 520,200 520,246"/>
+  <text class="lbl" x="560" y="196" text-anchor="middle">응답 원문</text>
+  <!-- fail: EXAONE -> fail box -->
+  <path class="failarrow" d="M790,150 L790,246"/>
+  <text class="lbl" x="800" y="205">실패</text>
+  <!-- prior also feeds merge -->
+  <path class="arrow dash" d="M144,150 C144,315 250,315 316,315"/>
+  <text class="lbl" x="166" y="232">Claude 1차 결과</text>
+  </g>
+</svg>
